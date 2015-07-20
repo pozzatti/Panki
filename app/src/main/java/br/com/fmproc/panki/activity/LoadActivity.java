@@ -15,9 +15,12 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import br.com.fmproc.panki.Card;
+import br.com.fmproc.panki.Deck;
 import br.com.fmproc.panki.R;
 import br.com.fmproc.panki.R.id;
 import br.com.fmproc.panki.R.layout;
+import br.com.fmproc.panki.main.Main;
 
 public class LoadActivity extends Activity {
 
@@ -32,6 +35,18 @@ public class LoadActivity extends Activity {
         List<String> files = new ArrayList<String>();
         for(String s: dir.list()){
             if (!s.contains(".history.txt")) {
+                try {
+                    Deck deck = Main.loadDeck(Environment.getExternalStorageDirectory().getPath() + "/panki/" + s);
+                    List<Card> cards = deck.getCards();
+                    int negative = 0;
+                    for (Card card : cards){
+                        if (card.getPriority() <= 0){
+                            negative++; 
+                        }
+                    }
+                    s+=" " + (int)((double)negative/cards.size()*100) + "%";
+                } catch (Exception e){}
+
                 files.add(s.replaceAll(".txt", ""));
             }
         }
@@ -43,6 +58,7 @@ public class LoadActivity extends Activity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 String  itemValue    = (String) lv.getItemAtPosition(position);
+                itemValue = itemValue.substring(0, itemValue.indexOf(' '));
 
                 Intent intent = new Intent(LoadActivity.this, MainActivity.class);
                 intent.putExtra("currentDeck", itemValue);
