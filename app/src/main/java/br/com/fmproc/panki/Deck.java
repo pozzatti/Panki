@@ -9,6 +9,7 @@ public class Deck {
 	private int cardsNumber;
 	private Direction direction;
 	private List<Card> cards;
+    private int unread;
 	
 	public String getName(){
 		return name;
@@ -41,8 +42,16 @@ public class Deck {
 	public void setCards(List<Card> cards){
 		this.cards = cards;
 	}
-	
-	public void persist(){
+
+    public int getUnread() {
+        return unread;
+    }
+
+    public void setUnread(int unread) {
+        this.unread = unread;
+    }
+
+    public void persist(){
 		try {
 			PrintWriter pw = new PrintWriter(new File(name), "UTF-8");
 			pw.write(""+cardsNumber+"\r\n");

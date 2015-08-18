@@ -17,9 +17,11 @@ import java.util.List;
 
 import br.com.fmproc.panki.Card;
 import br.com.fmproc.panki.Deck;
+import br.com.fmproc.panki.DeckItemAdapter;
 import br.com.fmproc.panki.R;
 import br.com.fmproc.panki.R.id;
 import br.com.fmproc.panki.R.layout;
+import br.com.fmproc.panki.exception.PankiException;
 import br.com.fmproc.panki.main.Main;
 
 public class LoadActivity extends Activity {
@@ -31,10 +33,10 @@ public class LoadActivity extends Activity {
         setTitle("Escolha o Deck");
 
         File dir = new File(Environment.getExternalStorageDirectory().getPath() + "/panki");
-        final ListView lv = (ListView)findViewById(id.listDecks);
-        List<String> files = new ArrayList<String>();
+        List<Deck> decks = new ArrayList<Deck>();
         for(String s: dir.list()){
             if (!s.contains(".history.txt")) {
+                Deck deckResult = new Deck();
                 try {
                     Deck deck = Main.loadDeck(Environment.getExternalStorageDirectory().getPath() + "/panki/" + s);
                     List<Card> cards = deck.getCards();
@@ -44,27 +46,34 @@ public class LoadActivity extends Activity {
                             negative++; 
                         }
                     }
-                    s+=" " + (int)((double)negative/cards.size()*100) + "%";
-                } catch (Exception e){}
+                    deckResult.setName(s.replaceAll(".txt", ""));
+                    deckResult.setUnread((int)((double)negative/cards.size()*100));
 
-                files.add(s.replaceAll(".txt", ""));
+                }catch (PankiException e){
+                    deckResult.setName("<ERROR line "+e.getMessage()+"> "+s.replaceAll(".txt", ""));
+                }
+                catch (Exception e){}
+                decks.add(deckResult);
             }
         }
 
-        ArrayAdapter<String> adapter = new ArrayAdapter<String>(this, layout.simplerow, files);
+        DeckItemAdapter adapter = new DeckItemAdapter(this, layout.deck, decks);
+
+        final ListView lv = (ListView)findViewById(id.listDecks);
         lv.setAdapter(adapter);
 
         lv.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                String  itemValue    = (String) lv.getItemAtPosition(position);
-                itemValue = itemValue.substring(0, itemValue.indexOf(' '));
+                Deck  deck    = (Deck) lv.getItemAtPosition(position);
+                String itemValue = deck.getName();
 
                 Intent intent = new Intent(LoadActivity.this, MainActivity.class);
                 intent.putExtra("currentDeck", itemValue);
                 startActivity(intent);
             }
         });
+
     }
 
     @Override

@@ -13,22 +13,27 @@ import br.com.fmproc.panki.Card;
 import br.com.fmproc.panki.Deck;
 import br.com.fmproc.panki.DeckHistory;
 import br.com.fmproc.panki.Direction;
+import br.com.fmproc.panki.exception.PankiException;
 
 public class Main {
-	public static Deck loadDeck(String name){
+	public static Deck loadDeck(String name) throws PankiException{
+        String s = null;
+        int line = 0;
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(name));
 			Deck deck = new Deck();
 			deck.setName(name);
-			String s;
-			s = br.readLine();
+
+            s = br.readLine();
 			
 			deck.setCardsNumber(Integer.parseInt(s));
 			s = br.readLine();
 			deck.setDirection(Direction.valueOf(s));
 			deck.setCards(new ArrayList<Card>());
-			
+
+            line = 2;
 			while((s = br.readLine())!=null){
+                line++;
 				String ss[] = s.split("\\|");
 				Card card = new Card();
 				card.setFront(ss[0]);
@@ -40,16 +45,14 @@ public class Main {
 				}				
 				if (ss.length>2){
 					card.setPriority(Integer.parseInt(ss[ss.length-1]));
-				}				
-				
+				}
 				deck.getCards().add(card);
 			}
 			br.close();
-			
-			return deck;
+
+            return deck;
 		} catch (Exception e){
-			e.printStackTrace();
-			return null;
+            throw  new PankiException(Integer.toString(line));
 		}
 	}
 
